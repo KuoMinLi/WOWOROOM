@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>Document</title>
+  </head>
+  <body>
+    <h1>題目:https://hackmd.io/zUnaC5kqRjaUsdIPLeQmyA?view</h1>
+    <p>問題一：初始化，取得產品與購物車列表</p>
+    <p>問題二：新增購物車品項，並再次初始化購物車列表</p>
+    <p>問題三：修改購物車狀態(刪除全部、刪除單筆)，並再次初始化購物車列表</p>
+    <p>問題四：送出購買訂單，並再次初始化購物車列表</p>
+    <p>問題五：觀看後台訂單</p>
+
+    <ul
+      class="max-w-[1110px] justify-items-center  mx-auto mt-8 mb-[60px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+      id="products-list"
+    ></ul>
+
+    <div class="bg-[#F8F8F8] py-12">
+      <div class="container mx-auto w-1/2 min-w-[600px]">
+        <h2 class="text-[28px] font-black text-center">我的購物車</h2>
+        <table class="mt-8 text-xl mx-auto w-full" id="carts-list-total">
+          <thead>
+            <tr class="text-left">
+              <th width="40%">品項</th>
+              <th width="15%">單價</th>
+              <th width="15%">數量</th>
+              <th width="15%">金額</th>
+              <th width="15%"></th>
+            </tr>
+          </thead>
+          <tfoot id ="carts-total-price">
+            <tr>
+              <td class="py-5">
+                <button class="font-bold text-black border-black px-4 py-2 border-2 rounded-xl" 
+                id="delete-all-cart-btn">刪除所有品項</button>
+              </td>
+              <td></td>
+              <td></td>
+              <td>總金額</td>
+              <td id="total-price"></td>
+              </tr>
+          </tfoot>
+          <tbody id="carts-list"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="py-15">
+      <form action="" class="flex flex-col">
+        <h2>填寫預定資料</h2>
+        <label for="">
+          <span>姓名</span>
+          <input type="text" />
+        </label>
+        <label for="">
+          <span>電話</span>
+          <input type="text" />
+        </label>
+        <label for="">
+          <span>e-mail</span>
+          <input type="text" />
+        </label>
+        <label for="">
+          <span>寄送地址</span>
+          <input type="text" />
+        </label>
+        <label for="">
+          <span>交易方式</span>
+          <select name="" id="">
+            <option value="">信用卡</option>
+            <option value="">ATM轉帳</option>
+            <option value="">貨到付款</option>
+          </select>
+        </label>
+        <button type="submit">送出預訂資料</button>
+      </form>
+
+      <form>
+        <div class="mb-6">
+          <label
+            for="email"
+            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+            >Your email</label
+          >
+          <input
+            type="email"
+            id="email"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            placeholder="name@flowbite.com"
+            required
+          />
+        </div>
+        <div class="mb-6">
+          <label
+            for="password"
+            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+            >Your password</label
+          >
+          <input
+            type="password"
+            id="password"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+            required
+          />
+        </div>
+        <div class="flex items-start mb-6">
+          <div class="flex items-center h-5">
+            <input
+              id="remember"
+              type="checkbox"
+              value=""
+              class="w-4 h-4 bg-gray-50 rounded border border-gray-300 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800"
+              required
+            />
+          </div>
+          <label
+            for="remember"
+            class="ml-2 text-sm font-medium text-gray-900 dark:text-gray-300"
+            >Remember me</label
+          >
+        </div>
+        <button
+          type="submit"
+          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
+        >
+          Submit
+        </button>
+      </form>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="index.js"></script>
+  </body>
+</html>
