@@ -1,0 +1,22 @@
+{
+  "name": "woworoom",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/KuoMinLi/WOWOROOM.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/KuoMinLi/WOWOROOM/issues"
+  },
+  "homepage": "https://github.com/KuoMinLi/WOWOROOM#readme",
+  "devDependencies": {
+    "eslint": "^8.28.0"
+  }
+}

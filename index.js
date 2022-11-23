@@ -1,6 +1,8 @@
+/* eslint-disable no-undef */
+
+
 // 輸入自己的api_key
 const api_path = "kmapitest";
-const token = "L9wcq4qbltS3NJ1U4P2Dk00lSUE3";
 
 //建立API環境，利用axios.create來建立統整，簡潔程式碼
 
@@ -9,252 +11,384 @@ const customerApi = axios.create({
   timeout: 5000,
 });
 
-const adminApi = axios.create({
-  baseURL: `https://livejs-api.hexschool.io/api/livejs/v1/admin/${api_path}`,
-  headers: {
-    Authorization: token,
-  },
-  timeout: 5000,
-});
-
 //初始化
-const init = async () => {
+const init = () => {
+  (async () => {
+    try {
+      const products = await getProducts();
+      renderProducts(products);
+      const carts = await getCart();
+      renderCartAll(carts);
+      checkForm();
+    } catch (err) {
+      console.log(err);
+    }
+  })();
+};
+
+// 取得產品列表
+const getProducts = async () => {
   try {
-    const products = await getProducts();
-    renderProducts(products);
-    const carts = await getCarts();
-    renderCarts(carts);
+    const res = await customerApi.get("/products");
+    const { products } = res.data;
+    return products;
   } catch (error) {
     console.log(error);
   }
 };
 
-//渲染產品列表
-const productsList = document.querySelector("#products-list");
-const renderProducts = (data) => {
-  let str = "";
-  data.forEach((item) => {
-    str += `<li class="">
-              <div class=" relative">
-                 <img src="${item.images}" alt="">
-                <span class="px-6 py-2 bg-black text-white absolute right-0 top-2" >新品</span>
-                <button data-id=${item.id} class="w-full px-6 py-2 bg-black text-white text-center mb-2" >加入購物車</button>
-                <h2 class="text-lg font-bold mb-2">${item.title}</h2>
-                <p class="line-through mb-2">NT$${item["origin_price"]}</p>
-                <p class="text-xl font-bold">NT$${item.price}</p>
-              </div>
-            </li>`;
-  });
-  productsList.innerHTML = str;
+// 取得購物車列表
+const getCart = async () => {
+  try {
+    const res = await customerApi.get("/carts");
+    const carts = res.data;
+    return carts;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
-//渲染購物車項目
-const cartsList = document.querySelector("#carts-list");
-const renderCartsContent = (data) => {
-  let str = "";
-  data.forEach((item) => {
-    str += `<tr class="border-b border-[#BFBFBF]">
-              <td class="py-5 ">
-                <div class="flex items-center ">
-                  <img class="h-[80px]" src="${item.product.images}" alt="">
-                  <p class="ml-2">${item.product.title}</p>
-                </div>
-              </td>
-              <td>${item.product.price}</td>
-              <td>${item.quantity}</td>
-              <td>${item.product.price * item.quantity}</td>
-              <td>
-                <button data-id=${item.id} class="delete-cart-btn">刪除</button>
-              </td> 
-            </tr>`;
-  });
-  cartsList.innerHTML = str;
+// 加入購物車
+const addCart = async (id, count) => {
+  try {
+    const res = await customerApi.post("/carts", {
+      data: {
+        productId: id,
+        quantity: count,
+      },
+    });
+    const carts = res.data;
+    return carts;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
-// 渲染表尾金額
-const renderTotalPrice = (data) => {
-  const totalPrice = document.querySelector("#total-price");
-  totalPrice.textContent = data;
+// 修改購物車數量
+const updateCart = async (id, count) => {
+  try {
+    const res = await customerApi.patch(`/carts`, {
+      data: {
+        id,
+        quantity: count,
+      },
+    });
+    const carts = res.data;
+    return carts;
+  } catch (error) {
+    console.log(error);
+  }
 };
+
+// 刪除購物車單筆
+const deleteCart = async (id) => {
+  try {
+    const res = await customerApi.delete(`/carts/${id}`);
+    const carts = res.data;
+    return carts;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// 刪除購物車全部
+const deleteAllCart = async () => {
+  const res = await customerApi.delete(`/carts`);
+  const carts = res.data;
+  return carts;
+};
+
+// 新增訂單
+const addOrder = async (data) => {
+  try {
+    const res = await customerApi.post("/orders", {
+      data,
+    });
+    const order = res.data;
+    return order;
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// 渲染產品列表
+const productWrap = document.querySelector(".productWrap");
+const renderProducts = (products) => {
+  let str = "";
+  products.forEach((item) => {
+    str += `
+            <li class="productCard">
+              <h4 class="productType">新品</h4>
+              <img src="${item.images}" alt="">
+              <a href="#" data-id="${item.id}" class="addCardBtn">加入購物車</a>
+              <h3>${item.title}</h3>
+              <del class="originPrice">NT$ ${thousands(item.origin_price)}</del>
+              <p class="nowPrice">NT$ ${thousands(item.price)}</p>
+            </li>
+          `;
+  });
+  productWrap.innerHTML = str;
+};
+
+// 監聽產品種類選擇
+const productSelect = document.querySelector(".productSelect");
+productSelect.addEventListener("change", (e) => {
+  const category = e.target.value;
+  (async () => {
+    try {
+      const products = await getProducts();
+      const filterProducts = products.filter((item) => {
+        return item.category === category;
+      });
+      renderProducts(filterProducts);
+    } catch (err) {
+      console.log(err);
+    }
+  })();
+});
+
+// 監聽加入購物車按鈕
+productWrap.addEventListener("click", (e) => {
+  e.preventDefault();
+  const addCardBtn = e.target.closest(".addCardBtn");
+  if (addCardBtn) {
+    const productId = addCardBtn.dataset.id;
+    (async () => {
+      try {
+        const cartslist = await getCart();
+        const cart = cartslist.carts.find((item) => {
+          return item.product.id === productId;
+        });
+        // 判斷購物車是否有此商品
+        if (cart) {
+          const count = cart.quantity + 1;
+          const carts = await updateCart(cart.id, count);
+          renderCartAll(carts);
+        } else {
+          const carts = await addCart(productId, 1);
+          renderCartAll(carts);
+        }
+        changeFinishAlert("加入購物車成功");
+      } catch (err) {
+        console.log(err);
+      }
+    })();
+  }
+});
 
 // 渲染購物車
-const renderCarts = (data) => {
-  renderCartsContent(data.carts);
-  renderTotalPrice(data.finalTotal);
-};
 
-//問題一：初始化，取得產品與購物車列表
-
-const getProducts = async () => {
-  try {
-    const result = await customerApi.get("/products");
-    const { products } = result.data;
-    return products;
-  } catch (err) {
-    console.log(err);
+const renderCartAll = (data) => {
+  const shoppingCart = document.querySelector(".shoppingCart");
+  const orderInfo = document.querySelector(".orderInfo");
+  if (data.carts.length > 0) {
+    shoppingCart.classList.remove("hidden");
+    orderInfo.classList.remove("hidden");
+    renderCart(data.carts);
+    renderCartTotal(data.finalTotal);
+  } else {
+    shoppingCart.classList.add("hidden");
+    orderInfo.classList.add("hidden");
   }
 };
 
-const getCarts = async () => {
-  try {
-    const cartsResult = await customerApi.get("/carts");
-    const carts = cartsResult.data;
-    return carts;
-  } catch (err) {
-    console.log(err);
-  }
+// 渲染購物車列表
+const cartWrap = document.querySelector(".cartWrap");
+const renderCart = (carts) => {
+  let str = "";
+  carts.forEach((item) => {
+    str += `<tr>
+              <td>
+                  <div class="cardItem-title">
+                      <img src="${item.product.images}" alt="">
+                      <p>${item.product.title}</p>
+                  </div>
+              </td>
+              <td>NT$ ${thousands(item.product.origin_price)}</td>
+              <td>${item.quantity}</td>
+              <td>NT$ ${thousands(item.product.price)}</td>
+              <td class="discardBtn">
+                  <a href="#"  class="discardBtnId material-icons" data-id="${
+                    item.id
+                  }">
+                      clear
+                  </a>
+              </td>
+            </tr>`;
+  });
+  cartWrap.innerHTML = str;
 };
 
-//監聽產品項目按鈕
-productsList.addEventListener("click", (e) => {
-  if (e.target.nodeName === "BUTTON") {
-    const productId = e.target.dataset.id;
-    // 判定是否有產品已經在購物車內，有則數量+1，沒有則新增
-    let count = 1;
-    (async (id) => {
-      const check = await checkItemCarts(id);
-      if (check) {
-        count = check.quantity + 1;
+// 渲染購物車金額
+const renderCartTotal = (num) => {
+  const cartTotal = document.querySelector(".cartTotal");
+  cartTotal.textContent = `NT$ ${thousands(num)}`;
+};
+
+// 狀態更改完成提示
+const changeFinishAlert = (str) => {
+  Swal.fire({
+    position: "top-end",
+    icon: "success",
+    title: str,
+    showConfirmButton: false,
+    timer: 1500,
+  });
+};
+
+// 更改失敗提示
+const changeFailAlert = (str) => {
+  Swal.fire({
+    position: "top-end",
+    icon: "error",
+    title: str,
+    showConfirmButton: false,
+    timer: 1500,
+  });
+};
+
+// 監聽購物車刪除按鈕
+cartWrap.addEventListener("click", (e) => {
+  e.preventDefault();
+  const discardBtn = e.target.closest(".discardBtnId");
+  if (discardBtn) {
+    const id = discardBtn.dataset.id;
+    (async () => {
+      try {
+        const carts = await deleteCart(id);
+        renderCartAll(carts);
+        changeFinishAlert("刪除成功");
+      } catch (err) {
+        console.log(err);
       }
-      const newCarts = await postCarts(id, count);
-      renderCarts(newCarts);
-    })(productId);
+    })();
   }
 });
 
-// 確認是否品項已在購物車內
-
-const checkItemCarts = async (ProductId) => {
-  try {
-    const carts = await getCarts();
-    const checkItem = carts.carts.filter(
-      (item) => item.product.id === ProductId
-    );
-    if (checkItem.length > 0) {
-      return {
-        check: true,
-        quantity: checkItem[0].quantity,
-      };
-    } else {
-      return false;
+// 監聽購物車刪除全部按鈕
+const discardAllBtn = document.querySelector(".discardAllBtn");
+discardAllBtn.addEventListener("click", (e) => {
+  e.preventDefault();
+  (async () => {
+    try {
+      const carts = await deleteAllCart();
+      renderCartAll(carts);
+      changeFinishAlert("清空購物車成功");
+    } catch (err) {
+      console.log(err);
+      changeFailAlert(err.response.data.message);
     }
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-//問題二：新增購物車品項，並再次初始化購物車列表
-
-const postCarts = async (ProductId, count) => {
-  try {
-    const result = await customerApi.post("/carts", {
-      data: {
-        productId: ProductId,
-        quantity: count,
-      },
-    });
-    const carts = result.data;
-    return carts;
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-// 修改購物車品項數量
-
-const patchCarts = async (cartId, count) => {
-  try {
-    const result = await customerApi.patch(`/carts`, {
-      data: {
-        id: cartId,
-        quantity: count,
-      },
-    });
-    const carts = result.data;
-    return carts;
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-//問題三：修改購物車狀態(刪除全部、刪除單筆)，並再次初始化購物車列表
-
-//刪除單筆
-const deleteCarts = async (ProductId) => {
-  try {
-    const result = await customerApi.delete(`/carts/${ProductId}`);
-    const carts  = result.data;
-    return carts;
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-//刪除全部
-const deleteAllCarts = async () => {
-  try {
-    const result = await customerApi.delete("/carts");
-    const carts = result.data;
-    return carts;
-  } catch (err) {
-    console.log(err);
-  }
-};
-
-//監聽購物車按鈕
-
-const cartsListTotal = document.querySelector("#carts-list-total");
-cartsListTotal.addEventListener("click", (e) => {
-  if (e.target.getAttribute("class") === "delete-cart-btn") {
-    const productId = e.target.dataset.id;
-    deleteCarts(productId).then((res) => renderCarts(res));
-  }
-  if (e.target.id === "delete-all-cart-btn") {
-    deleteAllCarts().then((res) => renderCarts(res));
-  }
+  })();
 });
 
-//問題四：送出購買訂單，並再次初始化購物車列表
-
-const testData = {
-  data: {
-    user: {
-      name: "六角學院",
-      tel: "07-5313506",
-      email: "hexschool@hexschool.com",
-      address: "高雄市六角學院路",
-      payment: "Apple Pay",
+// 驗證表單規則
+const constraints = {
+  name: {
+    presence: {
+      allowEmpty: false,
+      message: "必填，請輸入姓名",
+    },
+  },
+  tel: {
+    presence: {
+      allowEmpty: false,
+      message: "必填，請輸入電話",
+    },
+    format: {
+      pattern: "^09[0-9]{8}$",
+      message: "格式錯誤，請輸入正確電話格式",
+    },
+  },
+  email: {
+    presence: {
+      allowEmpty: false,
+      message: "必填，請輸入電子郵件",
+    },
+    email: {
+      message: "格式錯誤，請輸入正確電子郵件格式",
+    },
+  },
+  address: {
+    presence: {
+      allowEmpty: false,
+      message: "必填，請輸入地址",
+    },
+  },
+  tradeway: {
+    presence: {
+      allowEmpty: false,
+      message: "必填，請選擇付款方式",
     },
   },
 };
 
-const postOrder = async (data) => {
-  try {
-    const result = await customerApi.post("/orders", data);
-    const res = result.data;
-    init();
-    console.log(res);
-    // return res;
-  } catch (err) {
-    console.log(err);
-  }
+// 驗證輸入內容
+let formErrors = true;
+const checkForm = () => {
+  const inputs = document.querySelectorAll(".orderInfo-input");
+  inputs.forEach((item) => {
+    item.addEventListener("blur", () => {
+      //先清除錯誤訊息及狀態
+      item.nextElementSibling.textContent = "";
+      formErrors = false;
+
+      // 驗證單一欄位
+      const errors = validate(orderForm, constraints);
+
+      // 渲染錯誤訊息及狀態
+      if (errors) {
+        Object.keys(errors).forEach((key) => {
+          const error = document.getElementById(`customer${key}`);
+          const messageElement = error.nextElementSibling;
+          const messageText = errors[key].toString().split(" ")[1];
+          messageElement.textContent = messageText;
+          formErrors = true;
+        });
+      }
+    });
+  });
 };
 
-// postOrder(testData)
+// 監聽表單送出
 
-//問題五：觀看後台訂單
+const orderForm = document.querySelector(".orderInfo-form");
+orderForm.addEventListener("click", (e) => {
+  e.preventDefault();
+  const submitBtn = e.target.closest(".orderInfo-btn");
+  if (submitBtn && !formErrors) {
+    const name = document.querySelector("#customername").value;
+    const tel = document.querySelector("#customertel").value;
+    const email = document.querySelector("#customeremail").value;
+    const address = document.querySelector("#customeraddress").value;
+    const tradeway = document.querySelector("#customertradeway").value;
+    const order = {
+      user: { name, tel, email, address, payment: tradeway },
+    };
+    (async () => {
+      try {
+        await addOrder(order);
+        changeFinishAlert("訂單送出成功");
+        orderForm.reset();
+        const carts = await getCart();
+        renderCartAll(carts);
+      } catch (err) {
+        console.log(err);
+        changeFailAlert(err.response.data.message);
+      }
+    })();
+  }
+});
 
-const getOrder = async () => {
-  try {
-    const result = await adminApi.get("/orders");
-    const { orders } = result.data;
-    // return orders;
-    console.log(orders);
-  } catch (err) {
-    console.log(err);
+// 千分位
+const thousands = (value) => {
+  if (value) {
+    value += "";
+    const arr = value.split(".");
+    const re = /(\d{1,3})(?=(\d{3})+$)/g;
+    return arr[0].replace(re, "$1,") + (arr.length == 2 ? "." + arr[1] : "");
+  } else {
+    return "";
   }
 };
-
-// getOrder()
 
 init();
