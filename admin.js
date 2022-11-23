@@ -66,6 +66,8 @@ const deleteOrderAll = async () => {
 // 渲染訂單列表
 const orderList = document.querySelector("#order-list");
 const renderOrder = (order) => {
+  //訂單依時間排序
+  order.sort((a, b) => a.createdAt - b.createdAt);
   let str = "";
   order.forEach((item) => {
     // 取出個別訂單產品數量

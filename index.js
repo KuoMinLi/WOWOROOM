@@ -1,6 +1,5 @@
 /* eslint-disable no-undef */
 
-
 // 輸入自己的api_key
 const api_path = "kmapitest";
 
@@ -137,10 +136,14 @@ productSelect.addEventListener("change", (e) => {
   (async () => {
     try {
       const products = await getProducts();
-      const filterProducts = products.filter((item) => {
-        return item.category === category;
-      });
-      renderProducts(filterProducts);
+      if (category === "全部") {
+        renderProducts(products);
+      } else {
+        const filterProducts = products.filter((item) => {
+          return item.category === category;
+        });
+        renderProducts(filterProducts);
+      }
     } catch (err) {
       console.log(err);
     }
