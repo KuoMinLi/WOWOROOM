@@ -4,7 +4,7 @@
 ## 使用 外部API 進行購物車CRUD 及 後台訂單管理
 
 ---
-[https://media.giphy.com/media/0Jfsmdo9YCd7AHmX06/giphy.gif]
+https://media.giphy.com/media/0Jfsmdo9YCd7AHmX06/giphy.gif
 
 
 ## 操作方式
