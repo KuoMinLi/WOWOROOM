@@ -59,7 +59,7 @@ const deleteOrderId = async (orderId) => {
 // 刪除全部訂單
 const deleteOrderAll = async () => {
   const result = await adminApi.delete(`/orders`);
-  const { orders } = result.data;
+  const  orders  = result.data;
   return orders;
 };
 
@@ -148,7 +148,7 @@ discardAllBtn.addEventListener("click", (e) => {
   (async () => {
     try {
       const result = await deleteOrderAll();
-      changeFinishAlert(result.data.message);
+      changeFinishAlert(result.message);
       init();
     } catch (err) {
       console.log(err);

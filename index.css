@@ -600,6 +600,16 @@ body {
   font-size: 1.75rem;
 }
 
+.cartsNum {
+  border: 1px solid #B9B9B9;
+  min-height: 38px;
+  min-width: 60px;
+  border-radius: 5px;
+  text-indent: 10px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
 .shoppingCart {
   background-color: #F8F8F8;
   padding: 60px 0;

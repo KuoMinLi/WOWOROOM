@@ -11,11 +11,13 @@ const customerApi = axios.create({
 });
 
 //初始化
+let productsData = [];
 const init = () => {
   (async () => {
     try {
       const products = await getProducts();
-      renderProducts(products);
+      productsData = products;
+      renderProducts(productsData);
       const carts = await getCart();
       renderCartAll(carts);
       checkForm();
@@ -133,21 +135,14 @@ const renderProducts = (products) => {
 const productSelect = document.querySelector(".productSelect");
 productSelect.addEventListener("change", (e) => {
   const category = e.target.value;
-  (async () => {
-    try {
-      const products = await getProducts();
-      if (category === "全部") {
-        renderProducts(products);
-      } else {
-        const filterProducts = products.filter((item) => {
-          return item.category === category;
-        });
-        renderProducts(filterProducts);
-      }
-    } catch (err) {
-      console.log(err);
-    }
-  })();
+  if (category === "全部") {
+    renderProducts(productsData);
+  } else {
+    const filterProducts = [...productsData].filter((item) => {
+      return item.category === category;
+    });
+    renderProducts(filterProducts);
+  }
 });
 
 // 監聽加入購物車按鈕
@@ -164,14 +159,12 @@ productWrap.addEventListener("click", (e) => {
         });
         // 判斷購物車是否有此商品
         if (cart) {
-          const count = cart.quantity + 1;
-          const carts = await updateCart(cart.id, count);
-          renderCartAll(carts);
+          changeFailAlert("此商品已在購物車中");
         } else {
           const carts = await addCart(productId, 1);
           renderCartAll(carts);
+          changeFinishAlert("加入購物車成功");
         }
-        changeFinishAlert("加入購物車成功");
       } catch (err) {
         console.log(err);
       }
@@ -207,9 +200,17 @@ const renderCart = (carts) => {
                       <p>${item.product.title}</p>
                   </div>
               </td>
-              <td>NT$ ${thousands(item.product.origin_price)}</td>
-              <td>${item.quantity}</td>
               <td>NT$ ${thousands(item.product.price)}</td>
+              <td>
+                <select name="" class="cartsNum" data-id="${item.id}">
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                </select>
+              </td>
+              <td>NT$ ${thousands(item.product.price * item.quantity)}</td>
               <td class="discardBtn">
                   <a href="#"  class="discardBtnId material-icons" data-id="${
                     item.id
@@ -220,7 +221,25 @@ const renderCart = (carts) => {
             </tr>`;
   });
   cartWrap.innerHTML = str;
+  const cartsNum = document.querySelectorAll(".cartsNum");
+  cartsNum.forEach((item, index) => {
+    item.value = carts[index].quantity;
+  });
 };
+
+// 監聽購物車數量選擇
+cartWrap.addEventListener("change", (e) => {
+  const num = e.target.value;
+  const id = e.target.dataset.id;
+  (async () => {
+    try {
+      const carts = await updateCart(id, +num);
+      renderCartAll(carts);
+    } catch (err) {
+      console.log(err);
+    }
+  })();
+});
 
 // 渲染購物車金額
 const renderCartTotal = (num) => {
